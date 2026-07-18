@@ -2,14 +2,31 @@ name: MENSA Checker
 
 on:
   workflow_dispatch:
-  push:
+  schedule:
+    - cron: "*/30 * * * *"
+
+permissions:
+  contents: write
 
 jobs:
-  test:
+  check:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Hello
-        run: echo "GitHub Actions works!"
+      - uses: actions/checkout@v4
 
-#test
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - run: python check_mensa.py
+
+      - name: Commit updated cache
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add last_hash.txt
+          git diff --cached --quiet || git commit -m "Update cache"
+          git push
