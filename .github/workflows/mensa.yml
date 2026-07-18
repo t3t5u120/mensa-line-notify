@@ -2,6 +2,7 @@ name: MENSA Checker
 
 on:
   workflow_dispatch:
+  push:
 
 jobs:
   test:
