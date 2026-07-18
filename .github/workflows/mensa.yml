@@ -3,7 +3,7 @@ name: MENSA Checker
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/30 * * * *"
 
 permissions:
   contents: write
@@ -13,20 +13,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - run: pip install -r requirements.txt
-
-      - run: python check_mensa.py
-
-      - name: Commit updated cache
+      - name: Install dependencies
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run MENSA checker
+        run: python check_mensa.py
+
+      - name: Commit updated hash
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
           git add last_hash.txt
-          git diff --cached --quiet || git commit -m "Update cache"
-          git push
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update MENSA page hash"
+            git push
+          fi
