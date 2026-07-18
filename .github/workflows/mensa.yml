@@ -3,7 +3,7 @@ name: MENSA Checker
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/10 * * * *"
 
 permissions:
   contents: write
@@ -30,8 +30,8 @@ jobs:
 
       - name: Run MENSA checker
         env:
-        EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
-        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
         run: python check_mensa.py
 
       - name: Commit updated hash
