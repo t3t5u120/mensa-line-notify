@@ -10,15 +10,15 @@ from bs4 import BeautifulSoup
 URL = "https://mensa.jp/exam/"
 HASH_FILE = Path("last_hash.txt")
 
-# ページを取得
+# ページ取得
 response = requests.get(URL, timeout=30)
 response.raise_for_status()
 
-# HTMLを整理
+# HTMLから文字だけ取り出す
 soup = BeautifulSoup(response.text, "html.parser")
 text = soup.get_text(separator="\n", strip=True)
 
-# ハッシュを作成
+# ハッシュ作成
 current_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 # 前回のハッシュを読む
@@ -30,8 +30,9 @@ else:
 if current_hash == old_hash:
     print("変更なし")
 else:
-    print("** MENSAページが更新されました **")
+    print("★★ MENSAページが更新されました ★★")
 
+    # ---------- メール送信 ----------
     sender = os.environ["EMAIL_ADDRESS"]
     password = os.environ["EMAIL_PASSWORD"]
 
@@ -49,5 +50,18 @@ else:
         smtp.login(sender, password)
         smtp.send_message(msg)
 
+    # ---------- Slack通知 ----------
+    webhook = os.environ["SLACK_WEBHOOK_URL"]
+
+    requests.post(
+        webhook,
+        json={
+            "text": "🚨 *MENSAページが更新されました！*\nhttps://mensa.jp/exam/"
+        },
+        timeout=30,
+    ).raise_for_status()
+
+    # ハッシュ保存
     HASH_FILE.write_text(current_hash)
 
+    print("メール・Slack通知を送信しました")
