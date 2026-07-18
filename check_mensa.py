@@ -29,3 +29,4 @@ if current_hash == old_hash:
 else:
     print("★★ MENSAページが更新されました ★★")
     HASH_FILE.write_text(current_hash)
+
